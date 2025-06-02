@@ -93,6 +93,12 @@ for:
 
 environment:
   matrix:
+    - job_name: Linux x86 64-bit
+      appveyor_build_worker_image: *linux
+      ARCH: x86_64
+    - job_name: Linux ARM 64-bit
+      appveyor_build_worker_image: *linux
+      ARCH: aarch64
     - job_name: Windows x86 64-bit
       appveyor_build_worker_image: *windows
       ARCH: x64
@@ -105,12 +111,6 @@ environment:
     - job_name: macOS ARM 64-bit
       appveyor_build_worker_image: macos-bigsur
       ARCH: arm64
-    - job_name: Linux x86 64-bit
-      appveyor_build_worker_image: *linux
-      ARCH: x86_64
-    - job_name: Linux ARM 64-bit
-      appveyor_build_worker_image: *linux
-      ARCH: aarch64
 
 deploy:
   provider: GitHub
