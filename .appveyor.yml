@@ -14,15 +14,15 @@ for:
     install: |-
       # set -e
 
-      # sudo sed -i '/arch=/! s/^deb/deb [arch=amd64,i386]/' /etc/apt/sources.list
-      # awk '
-      # $3 !~ /ubuntu\.com/ { next }
-      # $1 == "deb" {
-      #   $2 = "[arch=armhf,arm64]";
-      #   $3 = "http://ports.ubuntu.com/ubuntu-ports/"
-      # } 1' /etc/apt/sources.list | sudo tee /etc/apt/sources.list.d/ports.list > /dev/null
-      # sudo sed -i 's/apt.postgresql.org/apt-archive.postgresql.org/' /etc/apt/sources.list
-      # sudo rm /etc/apt/sources.list.d/google-chrome.list
+      sudo sed -i '/arch=/! s/^deb/deb [arch=amd64,i386]/' /etc/apt/sources.list
+      awk '
+      $3 !~ /ubuntu\.com/ { next }
+      $1 == "deb" {
+        $2 = "[arch=armhf,arm64]";
+        $3 = "http://ports.ubuntu.com/ubuntu-ports/"
+      } 1' /etc/apt/sources.list | sudo tee /etc/apt/sources.list.d/ports.list > /dev/null
+      sudo sed -i 's/apt.postgresql.org/apt-archive.postgresql.org/' /etc/apt/sources.list
+      sudo rm /etc/apt/sources.list.d/google-chrome.list
 
       install-deps() {
         local arch="$1"; shift
@@ -45,7 +45,7 @@ for:
         # sudo apt-get upgrade -y
         sudo apt-get install -qq aptitude > /dev/null
         sudo apt update -y
-        sudo apt install -yR ${native[@]} ${target[@]/%/:$arch} > /dev/null
+        sudo apt install -y ${native[@]} ${target[@]/%/:$arch}
       }
 
       case $ARCH in
