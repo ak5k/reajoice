@@ -1,0 +1,124 @@
+---
+version: "{build}-{branch}"
+
+before_build:
+  - git submodule update --init --depth 1
+
+build_script:
+  - cmake -B build -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_OSX_ARCHITECTURES=$ARCH -DCMAKE_OSX_DEPLOYMENT_TARGET=$DEPLOY_TARGET
+  - cmake --build build
+
+test_script:
+  - sh: '[[ "$ARCH" = arm64 ]] || cmake --build build --target test'
+  - cmd: 'if NOT "%ARCH%" == "arm64ec" cmake --build build --target test'
+
+for:
+  - matrix: { only: [ appveyor_build_worker_image: &linux Ubuntu2404 ] }
+    install: |-
+      set -e
+
+      # sudo sed -i '/arch=/! s/^deb/deb [arch=amd64,i386]/' /etc/apt/sources.list
+      awk '
+      $3 !~ /ubuntu\.com/ { next }
+      $1 == "deb" {
+        $2 = "[arch=armhf,arm64]";
+        $3 = "http://ports.ubuntu.com/ubuntu-ports/"
+      } 1' /etc/apt/sources.list | sudo tee /etc/apt/sources.list.d/ports.list > /dev/null
+      # sudo sed -i 's/apt.postgresql.org/apt-archive.postgresql.org/' /etc/apt/sources.list
+      sudo rm /etc/apt/sources.list.d/google-chrome.list
+
+      install-deps() {
+        local arch="$1"; shift
+        local native=("$@" php-cli qemu-user-binfmt)
+        local target=(
+          libasound2-dev libjack-jackd2-dev \
+          ladspa-sdk \
+          libcurl4-openssl-dev  \
+          libfreetype-dev libfontconfig1-dev \
+          libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev \
+          libwebkit2gtk-4.1-dev \
+          libglu1-mesa-dev mesa-common-dev
+        )
+
+        sudo dpkg --add-architecture $arch
+        sudo apt-get update -qq
+        sudo apt-get install -qq aptitude > /dev/null
+        sudo aptitude install -yR ${native[@]} ${target[@]/%/:$arch} > /dev/null
+      }
+
+      case $ARCH in
+      x86_64)
+        install-deps amd64
+        ;;
+      i686)
+        install-deps i386 g++-multilib
+        export TOOLCHAIN=$(pwd)/cmake/linux-cross.cmake \
+               TOOLCHAIN_PREFIX=i386-linux-gnu
+        ;;
+      armv7l)
+        install-deps armhf g++-arm-linux-gnueabihf
+        export TOOLCHAIN=$(pwd)/cmake/linux-cross.cmake \
+               TOOLCHAIN_PREFIX=arm-linux-gnueabihf
+        ;;
+      aarch64)
+        install-deps arm64 g++-aarch64-linux-gnu
+        export TOOLCHAIN=$(pwd)/cmake/linux-cross.cmake \
+               TOOLCHAIN_PREFIX=aarch64-linux-gnu
+        ;;
+      esac
+    artifacts:
+      - path: build/reaper_*.so
+
+  - matrix: { only: [ appveyor_build_worker_image: macos-bigsur ] }
+    install:
+      - |-
+          DEPLOY_TARGET=11.0
+
+    artifacts:
+      - path: build/reaper_*.dylib
+
+  - matrix: { only: [ appveyor_build_worker_image: &windows Visual Studio 2022 ] }
+    install:
+      - if "%ARCH%" == "x64"     call "%ProgramFiles%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+      - if "%ARCH%" == "x86"     call "%ProgramFiles%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars32.bat"
+      - if "%ARCH%" == "arm64ec" call "%ProgramFiles%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsamd64_arm64.bat"
+      - if "%ARCH%" == "arm64ec" set CFLAGS=-arm64EC & set CXXFLAGS=-arm64EC
+    build_script:
+      - cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - cmake --build build
+    artifacts:
+      - path: build\reaper_*.dll
+      - path: build\reaper_*.pdb
+
+environment:
+  matrix:
+    - job_name: Windows x86 64-bit
+      appveyor_build_worker_image: *windows
+      ARCH: x64
+    - job_name: Windows ARM 64-bit EC
+      appveyor_build_worker_image: *windows
+      ARCH: arm64ec
+    - job_name: macOS x86 64-bit
+      appveyor_build_worker_image: macos-bigsur
+      ARCH: x86_64
+    - job_name: macOS ARM 64-bit
+      appveyor_build_worker_image: macos-bigsur
+      ARCH: arm64
+    - job_name: Linux x86 64-bit
+      appveyor_build_worker_image: *linux
+      ARCH: x86_64
+    - job_name: Linux ARM 64-bit
+      appveyor_build_worker_image: *linux
+      ARCH: aarch64
+
+deploy:
+  provider: GitHub
+  draft: true
+  description: ''
+  force_update: true
+  auth_token:
+    secure: Rk8do2Q/etdabjwIABBRdTJu1a4wYVu9Ltz8HJuC0wc3rz+hHUMGa3N7vTlsrd7z
+  artifact: /.*\.(dll|dylib|so)/
+  on:
+    APPVEYOR_REPO_TAG: true
