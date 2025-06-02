@@ -29,7 +29,7 @@ bool OnAction(KbdSectionInfo* sec, int command, int val, int valhw, int relmode,
 
 void messagePump()
 {
-    juce::MessageManager::getInstance()->runDispatchLoopUntil(10);
+    juce::MessageManager::getInstance()->runDispatchLoopUntil(2);
 }
 
 extern "C"
@@ -38,6 +38,7 @@ extern "C"
     {
         if (rec != nullptr && REAPERAPI_LoadAPI(rec->GetFunc) == 0)
         {
+            juce::initialiseJuce_GUI();
             juce::MessageManager::getInstance()->setCurrentThreadAsMessageThread();
             plugin_register("timer", (void*)messagePump);
 
