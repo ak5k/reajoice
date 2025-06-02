@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.22)
 project(reajoice VERSION 0.1.0)
 
 find_package(Git REQUIRED)
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vendor/WDL" AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vendor/WDL/.git")
+if(NOT EXISTS ${CMAKE_BINARY_DIR}/CMakeCache.txt)
   execute_process(
     COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
