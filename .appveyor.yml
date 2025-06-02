@@ -14,7 +14,7 @@ test_script:
   - cmd: 'if NOT "%ARCH%" == "arm64ec" cmake --build build --target test'
 
 for:
-  - matrix: { only: [ appveyor_build_worker_image: &linux Ubuntu2404 ] }
+  - matrix: { only: [ appveyor_build_worker_image: &linux Ubuntu2204 ] }
     install: |-
       set -e
 
