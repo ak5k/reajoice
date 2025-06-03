@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.22)
 project(reajoice VERSION 0.1.0)
 
 find_package(Git REQUIRED)
-if(NOT EXISTS ${CMAKE_BINARY_DIR}/CMakeCache.txt)
+if(NOT DEFINED INIT)
+  set(INIT TRUE CACHE INTERNAL "")
   execute_process(
     COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
