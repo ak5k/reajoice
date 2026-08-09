@@ -68,7 +68,6 @@ extern "C"
 #endif
 
             command_id = plugin_register("custom_action", (void*)&custom_action);
-
             plugin_register("hookcommand2", (void*)OnAction);
 
             return 1;
@@ -80,7 +79,6 @@ extern "C"
 #endif
             plugin_register("-hookcommand2", (void*)OnAction);
             plugin_register("-custom_action", (void*)&custom_action);
-            command_id = 0;
 
             delete state;
 
