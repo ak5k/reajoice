@@ -13,15 +13,19 @@ struct State
         auto* messageManager = juce::MessageManager::getInstanceWithoutCreating();
         messageManager->setCurrentThreadAsMessageThread();
 
-        mainWindow = std::make_unique<MainWindow>("Hello World Demo", new HelloWorldDemo());
+        mainWindow = new MainWindow("Hello World Demo", new HelloWorldDemo());
     }
 
     ~State()
     {
+        delete mainWindow;
+
         juce::shutdownJuce_GUI();
     }
 
-    std::unique_ptr<MainWindow> mainWindow;
+    MainWindow* mainWindow = nullptr;
+
+private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(State)
 };
 
@@ -38,6 +42,9 @@ custom_action_register_t custom_action =
 
 bool OnAction(KbdSectionInfo* sec, int command, int val, int valhw, int relmode, HWND hwnd)
 {
+    if (command != command_id)
+        return false;
+
     state->mainWindow->setVisible(!state->mainWindow->isVisible());
 
     return true;
@@ -76,7 +83,6 @@ extern "C"
             command_id = 0;
 
             delete state;
-            state = nullptr;
 
             return 0;
         }
