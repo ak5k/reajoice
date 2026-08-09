@@ -2,8 +2,30 @@
 #include <reaper_plugin_functions.h>
 //
 #include "MainWindow.h"
+#include <juce_core/juce_core.h>
 
-MainWindow* mainWindow = nullptr;
+struct State
+{
+    State()
+    {
+        juce::initialiseJuce_GUI();
+
+        auto* messageManager = juce::MessageManager::getInstanceWithoutCreating();
+        messageManager->setCurrentThreadAsMessageThread();
+
+        mainWindow = std::make_unique<MainWindow>("Hello World Demo", new HelloWorldDemo());
+    }
+
+    ~State()
+    {
+        juce::shutdownJuce_GUI();
+    }
+
+    std::unique_ptr<MainWindow> mainWindow;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(State)
+};
+
+State* state = nullptr;
 
 int command_id = 0;
 custom_action_register_t custom_action =
@@ -14,26 +36,15 @@ custom_action_register_t custom_action =
         nullptr
 };
 
-void messagePump();
-
 bool OnAction(KbdSectionInfo* sec, int command, int val, int valhw, int relmode, HWND hwnd)
 {
-    if (command != command_id)
-        return false;
-
-    if (!mainWindow)
-        return true;
-
-    mainWindow->setVisible(!mainWindow->isVisible());
+    state->mainWindow->setVisible(!state->mainWindow->isVisible());
 
     return true;
 }
 
 void messagePump()
 {
-    if (mainWindow == nullptr)
-        return;
-
     juce::MessageManager::getInstanceWithoutCreating()->runDispatchLoopUntil(1);
 }
 
@@ -43,16 +54,11 @@ extern "C"
     {
         if (rec != nullptr && REAPERAPI_LoadAPI(rec->GetFunc) == 0)
         {
-            juce::initialiseJuce_GUI();
-
-            auto* messageManager = juce::MessageManager::getInstanceWithoutCreating();
-            messageManager->setCurrentThreadAsMessageThread();
+            state = new State();
 
 #if JUCE_LINUX
             plugin_register("timer", (void*)messagePump);
 #endif
-
-            mainWindow = new MainWindow("Hello World Demo", new HelloWorldDemo());
 
             command_id = plugin_register("custom_action", (void*)&custom_action);
 
@@ -69,13 +75,9 @@ extern "C"
             plugin_register("-custom_action", (void*)&custom_action);
             command_id = 0;
 
-            if (mainWindow != nullptr)
-            {
-                delete mainWindow;
-                mainWindow = nullptr;
-            }
+            delete state;
+            state = nullptr;
 
-            juce::shutdownJuce_GUI();
             return 0;
         }
     }
