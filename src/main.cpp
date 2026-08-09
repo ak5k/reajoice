@@ -1,4 +1,3 @@
-#include <WDL/wdltypes.h>
 #define REAPERAPI_IMPLEMENT
 #include <reaper_plugin_functions.h>
 //
@@ -35,18 +34,7 @@ void messagePump()
     if (mainWindow == nullptr)
         return;
 
-    auto* messageManager = juce::MessageManager::getInstanceWithoutCreating();
-
-    if (messageManager == nullptr)
-        return;
-
-    if (!messageManager->isThisTheMessageThread())
-    {
-        jassertfalse;
-        return;
-    }
-
-    messageManager->runDispatchLoopUntil(2);
+    juce::MessageManager::getInstanceWithoutCreating()->runDispatchLoopUntil(1);
 }
 
 extern "C"
@@ -58,48 +46,15 @@ extern "C"
             juce::initialiseJuce_GUI();
 
             auto* messageManager = juce::MessageManager::getInstanceWithoutCreating();
-
-            if (messageManager == nullptr)
-            {
-                plugin_register("-timer", (void*)messagePump);
-                plugin_register("-hookcommand2", (void*)OnAction);
-                plugin_register("-custom_action", (void*)&custom_action);
-                command_id = 0;
-
-                if (mainWindow != nullptr)
-                {
-                    delete mainWindow;
-                    mainWindow = nullptr;
-                }
-
-                juce::shutdownJuce_GUI();
-                return 0;
-            }
-
             messageManager->setCurrentThreadAsMessageThread();
 
+#if JUCE_LINUX
             plugin_register("timer", (void*)messagePump);
+#endif
 
             mainWindow = new MainWindow("Hello World Demo", new HelloWorldDemo());
 
             command_id = plugin_register("custom_action", (void*)&custom_action);
-
-            if (command_id == 0)
-            {
-                plugin_register("-timer", (void*)messagePump);
-                plugin_register("-hookcommand2", (void*)OnAction);
-                plugin_register("-custom_action", (void*)&custom_action);
-                command_id = 0;
-
-                if (mainWindow != nullptr)
-                {
-                    delete mainWindow;
-                    mainWindow = nullptr;
-                }
-
-                juce::shutdownJuce_GUI();
-                return 0;
-            }
 
             plugin_register("hookcommand2", (void*)OnAction);
 
@@ -107,7 +62,9 @@ extern "C"
         }
         else
         {
+#if JUCE_LINUX
             plugin_register("-timer", (void*)messagePump);
+#endif
             plugin_register("-hookcommand2", (void*)OnAction);
             plugin_register("-custom_action", (void*)&custom_action);
             command_id = 0;

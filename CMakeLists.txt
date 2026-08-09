@@ -14,22 +14,25 @@ include(FetchContent)
 
 FetchContent_Declare(
     juce
-    URL https://github.com/juce-framework/JUCE/archive/refs/heads/master.tar.gz
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
+    GIT_TAG master
+    GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(juce)
 
 FetchContent_Declare(
     wdl_source
-    URL https://github.com/justinfrankel/WDL/archive/refs/heads/main.tar.gz
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    GIT_REPOSITORY https://github.com/justinfrankel/WDL.git
+    GIT_TAG main
+    GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(wdl_source)
 
 FetchContent_Declare(
     reaper_sdk_source
-    URL https://github.com/justinfrankel/reaper-sdk/archive/refs/heads/main.tar.gz
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    GIT_REPOSITORY https://github.com/justinfrankel/reaper-sdk.git
+    GIT_TAG main
+    GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(reaper_sdk_source)
 

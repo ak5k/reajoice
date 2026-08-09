@@ -1,11 +1,3 @@
-/*
-  ==============================================================================
-
-    This file contains the startup code for a PIP.
-
-  ==============================================================================
-*/
-
 #include "HelloWorldDemo.h"
 
 #include <juce_audio_utils/juce_audio_utils.h>
