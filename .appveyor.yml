@@ -66,7 +66,7 @@ for:
     artifacts:
       - path: build/reaper_*.so
 
-  - matrix: { only: [ appveyor_build_worker_image: macos-bigsur ] }
+  - matrix: { only: [ appveyor_build_worker_image: macos-latest ] }
     install:
       - |-
           DEPLOY_TARGET=11.0
@@ -92,9 +92,9 @@ environment:
     - job_name: Linux ARM 64-bit
       appveyor_build_worker_image: *linux
       ARCH: aarch64
-    - job_name: macOS x86 64-bit
-      appveyor_build_worker_image: macos-bigsur
-      ARCH: x86_64
+    # - job_name: macOS x86 64-bit
+    #   appveyor_build_worker_image: macos-latest
+    #   ARCH: x86_64
     - job_name: Linux x86 64-bit
       appveyor_build_worker_image: *linux
       ARCH: x86_64
@@ -102,7 +102,7 @@ environment:
       appveyor_build_worker_image: *windows
       ARCH: x64
     - job_name: macOS ARM 64-bit
-      appveyor_build_worker_image: macos-bigsur
+      appveyor_build_worker_image: macos-sonoma
       ARCH: arm64
 
 deploy:
