@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.28)
 
 project(reajoice VERSION 0.2.0)
 
@@ -17,6 +17,7 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
     GIT_TAG master
     GIT_SHALLOW TRUE
+    EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(juce)
 
@@ -25,6 +26,7 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/justinfrankel/WDL.git
     GIT_TAG main
     GIT_SHALLOW TRUE
+    EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(wdl_source)
 
@@ -33,6 +35,7 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/justinfrankel/reaper-sdk.git
     GIT_TAG main
     GIT_SHALLOW TRUE
+    EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(reaper_sdk_source)
 
